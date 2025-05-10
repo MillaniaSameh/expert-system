@@ -1,8 +1,8 @@
 from experta import Fact, KnowledgeEngine, Rule, NOT, AND, OR
 
-from FirstLineFacts import *
-from SecondLineFacts import *
-from StationsOfIntersectionFacts import *
+from KnowledgeBase.FirstLineFacts import *
+from KnowledgeBase.SecondLineFacts import *
+from KnowledgeBase.StationsOfIntersectionFacts import *
 from Helpers import *
 
 class MetroTicket(KnowledgeEngine):
