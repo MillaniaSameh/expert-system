@@ -1,15 +1,12 @@
 from experta import Fact
 from enum import Enum
 
-class NoStationFact(Fact):
+class SadatIntersectionStationFact(Fact):
     pass
-
-class AlShohadaaStationFact(Fact):
-    pass
-class SadatStationFact(Fact):
+class AlShohadaaIntersectionStationFact(Fact):
     pass
 
 class StationsOfIntersection(Enum):
-    AlShohadaa = (1, "Al Shohadaa", AlShohadaaStationFact())
-    Sadat = (2, "Sadat", SadatStationFact())
+    Sadat = (19, 10, "Sadat", SadatIntersectionStationFact())
+    AlShohadaa = (22, 13, "Al Shohadaa", AlShohadaaIntersectionStationFact())
 
