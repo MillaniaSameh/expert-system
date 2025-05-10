@@ -5,6 +5,7 @@ from KnowledgeBase.SecondLineFacts import *
 from KnowledgeBase.StationsOfIntersectionFacts import *
 from KnowledgeBase.FinalStationSelectionFact import *
 from Helpers import *
+import random
 
 class MetroTicket(KnowledgeEngine):
 
@@ -60,8 +61,25 @@ class MetroTicket(KnowledgeEngine):
         print("\n++ Same Line Route ++\n")
         print(f"From: {cs.value[1]:<30} --> {cs.__class__.__name__}")
         print(f"To  : {ds.value[1]:<30} --> {ds.__class__.__name__}")
-        stationsNumber = abs(cs.value[0] - ds.value[0])
-        print(f"\nYour trip includes {stationsNumber} stop{'s' if stationsNumber != 1 else ''}. Enjoy your ride!")
+
+        totalStationsNumber = abs(ds.value[0] - cs.value[0])
+
+        if ds.value[0] - cs.value[0] < 0:
+            currentLine = get_line_name_and_direction(cs.__class__.__name__, False)
+        else:
+            currentLine = get_line_name_and_direction(cs.__class__.__name__, True)
+
+        print(
+            f"\nTrip description"
+            f"\nTake the {currentLine[0]} ({currentLine[1]})"
+            f"\n\nNumber of stations"
+            f"\n{totalStationsNumber} stop{'s' if totalStationsNumber != 1 else ''}"
+        )
+
+        self.declare(TicketPriceSelectionFact(
+            StationsNumber = totalStationsNumber
+        ))
+
 
     @Rule(AND(DifferentLinesFact(), FinalStationSelectionFact(
         CurrentStation = MATCH.cs,
@@ -75,36 +93,53 @@ class MetroTicket(KnowledgeEngine):
         routeOptions = []
         for station in StationsOfIntersection:
             if (cs.__class__.__name__ == FirstLine.__name__):
-                before = abs(station.value[0] - cs.value[0]) # current to intersection on line 1
-                after = abs(station.value[1] - ds.value[0]) # intersection to destination on line 2
+                before = station.value[0] - cs.value[0] # current to intersection on line 1
+                after = ds.value[0] - station.value[1] # intersection to destination on line 2
             else:
-                before = abs(station.value[1] - cs.value[0]) # current to intersection on line 2
-                after = abs(station.value[0] - ds.value[0]) # intersection to destination on line 1
+                before = station.value[1] - cs.value[0] # current to intersection on line 2
+                after = ds.value[0] - station.value[0] # intersection to destination on line 1
 
-            routeOptions.append((before, after, before + after, station.value[2]))
+            routeOptions.append((before, after, abs(before) + abs(after), station.value[2]))
 
-        print("\nMultiple route options found:")
+        minTotal = min(route[2] for route in routeOptions)
+        bestOptions = [route for route in routeOptions if route[2] == minTotal]
+        beforeIntersection, afterIntersection, totalStationsNumber, intersectionPoint = random.choice(bestOptions)
 
-        for index, (before, after, total, intersectionPoint) in enumerate(routeOptions, start=1):
-            print(
-                f'{index}. '
-                f'{cs.value[1]} --> {before} stop{"s" if before != 1 else " "} --> '
-                f'switch at {intersectionPoint:<11} station --> '
-                f'{after} stop{"s" if after != 1 else " "} --> {ds.value[1]} '
-                f'— Total: {total} stop{"s" if total != 1 else ""}'
-            )
+        if beforeIntersection < 0:
+            currentLine = get_line_name_and_direction(cs.__class__.__name__, False)
+        else:
+            currentLine = get_line_name_and_direction(cs.__class__.__name__, True)
 
-        choice = int(input("\nPlease enter the number of your preferred route: ")) - 1
-        stationsBeforeIntersection, stationsAfterIntersection, totalStationsNumber, intersectionPoint = routeOptions[choice]
+        if afterIntersection < 0:
+            destinationLine = get_line_name_and_direction(ds.__class__.__name__, False)
+        else:
+            destinationLine = get_line_name_and_direction(ds.__class__.__name__, True)
 
         print(
-            f"\nYour trip includes "
-            f"{stationsBeforeIntersection} stop{'s' if stationsBeforeIntersection != 1 else ''} "
-            f"before the intersection '{intersectionPoint}' station "
-            f"and {stationsAfterIntersection} stop{'s' if stationsAfterIntersection != 1 else ''} afterwards, "
-            f"with a total of {totalStationsNumber} stop{'s' if totalStationsNumber != 1 else ''}."
-            f"\nEnjoy your ride!"
+            f"\nTrip description"
+            f"\nTake the {currentLine[0]} ({currentLine[1]}) "
+            f"and change the station at {intersectionPoint} to the "
+            f"{destinationLine[0]} ({destinationLine[1]})"
+            f"\n\nNumber of stations"
+            f"\n{totalStationsNumber} stop{'s' if totalStationsNumber != 1 else ''}"
         )
+
+        self.declare(TicketPriceSelectionFact(
+            StationsNumber = totalStationsNumber
+        ))
+
+    @Rule(TicketPriceSelectionFact(
+        StationsNumber = MATCH.stations
+    ))
+    def one_region(self, stations):
+        if stations <= 9:
+            print(f"\nAmount to be paid\n8 EGP")
+        elif stations <= 16: 
+            print(f"\nAmount to be paid\n10 EGP")
+        elif stations <= 23: 
+            print(f"\nAmount to be paid\n15 EGP")
+        else:
+            print(f"\nAmount to be paid\n20 EGP")
 
 def main():
     engine = MetroTicket()
