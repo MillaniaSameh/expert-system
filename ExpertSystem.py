@@ -4,7 +4,6 @@ from KnowledgeBase.FirstLineFacts import *
 from KnowledgeBase.SecondLineFacts import *
 from KnowledgeBase.StationsOfIntersectionFacts import *
 from KnowledgeBase.FinalStationSelectionFact import *
-from Helpers import *
 import random
 
 class MetroTicket(KnowledgeEngine):
@@ -28,15 +27,15 @@ class MetroTicket(KnowledgeEngine):
 
         if (currentStation > FirstLine.__len__()):
             currentStation = currentStation - FirstLine.__len__()
-            currentStationEnum = get_station_by_number(SecondLine, currentStation)
+            currentStationEnum = self.get_station_by_number(SecondLine, currentStation)
         else:
-            currentStationEnum = get_station_by_number(FirstLine, currentStation)
+            currentStationEnum = self.get_station_by_number(FirstLine, currentStation)
 
         if (destinationStation > FirstLine.__len__()):
             destinationStation = destinationStation - FirstLine.__len__()
-            destinationStationEnum = get_station_by_number(SecondLine, destinationStation)
+            destinationStationEnum = self.get_station_by_number(SecondLine, destinationStation)
         else:
-            destinationStationEnum = get_station_by_number(FirstLine, destinationStation)
+            destinationStationEnum = self.get_station_by_number(FirstLine, destinationStation)
 
         print(f'\n{"Current Station":20}: {currentStationEnum.value[1]:<30} --> {currentStationEnum.__class__.__name__}')
         print(f'{"Destination Station":20}: {destinationStationEnum.value[1]:<30} --> {destinationStationEnum.__class__.__name__}')
@@ -65,9 +64,9 @@ class MetroTicket(KnowledgeEngine):
         totalStationsNumber = abs(ds.value[0] - cs.value[0])
 
         if ds.value[0] - cs.value[0] < 0:
-            currentLine = get_line_name_and_direction(cs.__class__.__name__, False)
+            currentLine = self.get_line_name_and_direction(cs.__class__.__name__, False)
         else:
-            currentLine = get_line_name_and_direction(cs.__class__.__name__, True)
+            currentLine = self.get_line_name_and_direction(cs.__class__.__name__, True)
 
         print(
             f"\nTrip description"
@@ -106,14 +105,14 @@ class MetroTicket(KnowledgeEngine):
         beforeIntersection, afterIntersection, totalStationsNumber, intersectionPoint = random.choice(bestOptions)
 
         if beforeIntersection < 0:
-            currentLine = get_line_name_and_direction(cs.__class__.__name__, False)
+            currentLine = self.get_line_name_and_direction(cs.__class__.__name__, False)
         else:
-            currentLine = get_line_name_and_direction(cs.__class__.__name__, True)
+            currentLine = self.get_line_name_and_direction(cs.__class__.__name__, True)
 
         if afterIntersection < 0:
-            destinationLine = get_line_name_and_direction(ds.__class__.__name__, False)
+            destinationLine = self.get_line_name_and_direction(ds.__class__.__name__, False)
         else:
-            destinationLine = get_line_name_and_direction(ds.__class__.__name__, True)
+            destinationLine = self.get_line_name_and_direction(ds.__class__.__name__, True)
 
         print(
             f"\nTrip description"
@@ -133,13 +132,39 @@ class MetroTicket(KnowledgeEngine):
     ))
     def one_region(self, stations):
         if stations <= 9:
-            print(f"\nAmount to be paid\n8 EGP")
+            print(f"\nAmount to be paid\n8 EGP (category 1)")
         elif stations <= 16: 
-            print(f"\nAmount to be paid\n10 EGP")
+            print(f"\nAmount to be paid\n10 EGP (category 2)")
         elif stations <= 23: 
-            print(f"\nAmount to be paid\n15 EGP")
+            print(f"\nAmount to be paid\n15 EGP (category 3)")
         else:
-            print(f"\nAmount to be paid\n20 EGP")
+            print(f"\nAmount to be paid\n20 EGP (category 4)")
+
+    def get_station_by_number(self, enum_class, number):
+        for station in enum_class:
+            if station.value[0] == number:
+                return station
+        return None
+
+    def get_line_name_and_direction(self, enum_class_name, positiveDirection):
+        line = ""
+        direction = ""
+
+        if enum_class_name == "FirstLine":
+            line = "first line"
+            if positiveDirection:
+                direction = "ElMarg Direction"
+            else:
+                direction = "Helwan Direction"
+
+        if enum_class_name == "SecondLine":
+            line = "second line"
+            if positiveDirection:
+                direction = "Shobra Direction"
+            else:
+                direction = "ElMoneeb Direction"
+
+        return (line, direction)
 
 def main():
     engine = MetroTicket()

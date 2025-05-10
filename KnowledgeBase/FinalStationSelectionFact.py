@@ -1,5 +1,4 @@
 from experta import Fact
-from enum import Enum
 
 class NoStationFact(Fact):
     pass
